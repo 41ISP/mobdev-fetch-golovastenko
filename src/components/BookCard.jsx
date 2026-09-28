@@ -1,6 +1,8 @@
-const BookCard = ({author_name, title, first_publish_year, cover_i}) => {
+import { Link } from "react-router-dom"
+
+const BookCard = ({author_name, title, first_publish_year, cover_i, book_key}) => {
     return (
-        <a className="book-card" href="book.html">
+        <Link className="book-card" to={`/book/${book_key.split("/")[2]}`}>
             <div className="book-image">
                 <img
                     src={'https://covers.openlibrary.org/b/id/' + cover_i + '.jpg'}
@@ -13,7 +15,7 @@ const BookCard = ({author_name, title, first_publish_year, cover_i}) => {
                 {author_name && <p>{author_name.join(", ")}</p>}
                 {first_publish_year && <span className="year">{first_publish_year}</span>}
             </div>
-        </a>
+        </Link>
     )
 }
 

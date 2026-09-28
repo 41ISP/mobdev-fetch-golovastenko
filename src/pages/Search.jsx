@@ -10,6 +10,7 @@ const Search = () => {
     const [textField, setTextField] = useState(query)
     const [books, setBooks] = useState([])
     const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState(null)
 
     const handleSubmit = (e) => {
         e.preventDefault()
@@ -17,15 +18,25 @@ const Search = () => {
         navigate('/search?q=' + encodeURIComponent(textField.trim()))
     }
 
- 
+
     useEffect(() => {
-        const loadBooks = async() => {
-            setIsLoading(true)
-            const res = await fetch("https://openlibrary.org/search.json" + "?q=" + query + "&limit=10")
-            const data = await res.json()
-            console.log(data)
-            setBooks(data.docs)
-            setIsLoading(false)
+        const loadBooks = async () => {
+            try {
+                setIsLoading(true)
+                setBooks([])
+                const res = await fetch("https://openlibrary.org/search.json" + "?q=" + query + "&limit=20")
+                if (!res.ok) {
+                    const data = await res.json()
+                    throw new Error(data.detail[0].msg || "Что-то не так?")
+                }
+                const data = await res.json()
+                setBooks(data.docs)
+            } catch (error) {
+                console.error(error)
+                setError(error.message)
+            } finally {
+                setIsLoading(false)
+            }
         }
         loadBooks()
     }, [query])
@@ -56,15 +67,16 @@ const Search = () => {
                     —
                 </span>
             </div>
+            {!isLoading && error && <p>{error}</p>}
             {isLoading && <Loader />}
-            {!isLoading && books && books.length > 0 ? (
+            {books.length > 0 ? (
                 <div className="book-grid" id="results">
-                 {books.map((el, i) => (
-                    <BookCard {...el} key={i} />
-                ))}            
-            </div> 
+                    {books.map((el, i) => (
+                        <BookCard {...el} key={i} book_key={el.key} />
+                    ))}
+                </div>
             ) : (
-                "Книги не найдены"
+                !isLoading && <p>"Книга не найдена"</p>
             )}
         </section>
     )
